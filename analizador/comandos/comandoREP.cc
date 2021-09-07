@@ -7,6 +7,9 @@ std::string datosEBR(std::string path, int start);
 void correrComandoREP(std::string path,std::string name,std::string id,std::string ruta,std::string root);
 std::string buscarPathDisco(std::string id);
 void reporteMBR(std::string path, std::string id);
+void reporteDISK(std::string path, std::string id);
+std::string codeDiskLogicas(std::string path, int start, double size);
+void crearReporte(std::string codigoDot, std::string path);
 
 void comandREP(std::string argumentos){
     std::string actual = "", path = "", actL="", name="", id="", ruta = "", root="";
@@ -50,6 +53,10 @@ void correrComandoREP(std::string path,std::string name,std::string id,std::stri
     }
     if(name.compare("MBR")==0){
         reporteMBR(path, id);
+    }else if(name.compare("DISK")==0){
+        reporteDISK(path, id);
+    }else{
+        cout<<"No se reconoce el tipo de reporte a realizar: "<<name<<endl;
     }
 }
 
@@ -60,18 +67,85 @@ void reporteMBR(std::string path, std::string id){
         return;
     }
     std::string var = datosMBR(dirDisc);
-    ofstream file;
-    file.open("/home/report.dot");
-    file << var;
-    file.close();
+    crearReporte(var, path);
+    cout<<"Reporte mbr generado con exito"<<endl;
+}
+
+void crearReporte(std::string codigoDot, std::string path){
     int val = path.rfind("/");
     //Ruta solo con carpetas
     std::string rutaFinal = path.substr(0,val);
     crearCarpetas(rutaFinal);
+    ofstream file;
+    file.open("/home/report.dot");
+    file << codigoDot;
+    file.close();
     std::string instruccion = "dot -Tpng /home/report.dot -o "+path;
     system(instruccion.c_str());
     remove("/home/report.dot");
-    cout<<"Reporte mbr generado con exito"<<endl;
+}
+
+void reporteDISK(std::string path, std::string id){
+    std::string dirDisc = buscarPathDisco(id);
+    if(dirDisc.compare("")==0){
+        cout<<"Error, no se encontro un id: "<<id<<" no se puede ubicar el disco"<<endl;
+        return;
+    }
+    FILE*arch;
+    arch=fopen(dirDisc.c_str(),"rb+");
+    MBR mbr;
+    fseek(arch, 0, SEEK_SET);
+    fread(&mbr,sizeof(MBR),1,arch);
+    fclose(arch);
+    std::string var = "digraph Disk {\nnode [fontname=\"Arial\"];\nnod [shape=record label=\"MBR|\n";
+    //Verificamos las particiones basicas
+    double sizeDisk = mbr.mbr_tamano*1.0;
+    int nActual=0;
+    Partition aux;
+    for(int i = 0; i<4; i++){        
+        aux = mbr.mbr_partitions[i];
+        if(aux.part_status == 1){//Si es una particion activa
+            if(aux.part_type=='E'){
+                var += codeDiskLogicas(dirDisc, aux.part_start, sizeDisk);
+                if(i!=3){
+                    var+="|";
+                }
+            }else{
+                double sizePart = aux.part_size*1.0;
+                int porcentaje = (sizePart/sizeDisk)*100;
+                var+="Primaria\n-";
+                var+=to_string(porcentaje); var+="\% del disco";
+                if(i!=3){
+                    var+="|";
+                }
+            }
+        }else{
+            if(aux.part_start==-1){
+                double sizePart = aux.part_size*1.0;
+                int porcentaje = (sizePart/sizeDisk)*100;
+                var+="Libre\n-";
+                var+=to_string(porcentaje); var+="\% del disco";
+                if(i!=3){
+                    var+="|";
+                }
+            }else{
+                if(nActual == 0){
+                    nActual = mbr.mbr_partitions[i-1].part_start+mbr.mbr_partitions[i-1].part_size;
+                }
+                if(i==3){
+                    int sd = mbr.mbr_tamano;
+                    int sp = sd-nActual;
+                    double res = (sp*1.0)/(sd*1.0);
+                    int porcentaje = res*100 + 1;
+                    var+="Libre\n-";
+                    var+=to_string(porcentaje); var+="\% del disco";
+                }
+            }
+        }
+    }
+    var+="\"];\n}";
+    crearReporte(var,path);
+    cout<<"Se creo el reporte con exito"<<endl;
 }
 
 std::string buscarPathDisco(std::string id){
@@ -148,5 +222,49 @@ std::string datosEBR(std::string path, int start){
             activo=false;
         }
     }
+    return var;
+}
+
+std::string codeDiskLogicas(std::string path, int start, double size){
+    std::string var = "{Extendida|{\n";
+    bool activo = true; EBR ebr, aux;
+    while(activo){
+        FILE *archebr;
+        archebr=fopen(path.c_str(),"rb+");
+        fseek(archebr,start, SEEK_SET);
+        fread(&ebr,sizeof(EBR),1,archebr);
+        fclose(archebr);
+        if(ebr.part_status==1){
+            if(ebr.part_start!=-1){
+                var+="EBR|Logica\n-";
+                double sizePart = ebr.part_size*1.0;
+                int porcentaje = (sizePart/size)*100;
+                var+=to_string(porcentaje); var+="\% del disco";
+                if(ebr.part_next!=-1){
+                    var+="|\n";
+                }
+                aux = ebr;
+            }else{
+                var+="Libre\n-";
+                double sizePart = (aux.part_start+aux.part_size)*1.0;
+                int porcentaje = (sizePart/size)*100;
+                var+=to_string(porcentaje); var+="\% del disco";
+                if(ebr.part_next!=-1){
+                    var+="|\n";
+                }
+                aux = ebr;
+            }
+            start = ebr.part_next;
+        }else{
+            if(aux.part_start+aux.part_size<(int)size){
+                var+="|Libre\n-";
+                double sizePart = size-((aux.part_start+aux.part_size)*1.0);
+                int porcentaje = (sizePart/size)*100;
+                var+=to_string(porcentaje); var+="\% del disco";
+            }
+            activo=false;
+        }
+    }
+    var+="}}";
     return var;
 }

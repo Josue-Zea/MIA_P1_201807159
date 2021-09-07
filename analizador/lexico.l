@@ -16,6 +16,7 @@ IDPART [0-9]+[a-zA-Z]
 RUTA1 ("/"{IDENTIFICADOR})+("/"{IDENTIFICADOR}"."{IDENTIFICADOR})
 RUTA2 ("/"{IDENTIFICADOR})+("/"{IDENTIFICADOR})
 %%
+"#".*               {}
 "="		              {return yy::Parser::make_IGUAL();}
 "-"		              {return yy::Parser::make_MENOS();}
 "mkdisk"            {return yy::Parser::make_MKDISK();}
@@ -42,6 +43,7 @@ RUTA2 ("/"{IDENTIFICADOR})+("/"{IDENTIFICADOR})
 {CADENA}            {return yy::Parser::make_CADENA(std::string(yytext));}
 {RUTA1}             {return yy::Parser::make_RUTA1(std::string(yytext));}
 {RUTA2}             {return yy::Parser::make_RUTA2(std::string(yytext));}
+(\s|\r|\t|\n)+      {}
 
 [[:blank:]]         {}
 .                   {printf("Caracter no reconocido: %s\n",yytext);}

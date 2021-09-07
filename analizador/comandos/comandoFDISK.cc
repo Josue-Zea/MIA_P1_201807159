@@ -60,7 +60,7 @@ void comandFDISK(std::string argumentos){
     }
     if(exito==true){
         correrComandoFDISK(size,Uval,path,type,Fval,deleteVal,name,add);
-        imprimirdatosdisco(path);
+        //imprimirdatosdisco(path);
     }else{
         cout<<"Error en metodo comandFDISK, hay parametros invalidos";
     }
@@ -118,7 +118,8 @@ void fdiskDelete(std::string path,std::string name, std::string deleteVal){
         mbr.mbr_partitions[par].part_type='-';
         mbr.mbr_partitions[par].part_fit='-';
         mbr.mbr_partitions[par].part_start=-1;
-        mbr.mbr_partitions[par].part_size=0;
+        //Eliminamos esta linea para guardar el tamaño de la particion en caso de que se haya eliminado
+        //mbr.mbr_partitions[par].part_size=0;
         mbr.mbr_partitions[par].part_name[0] = '\0';
         FILE *archivo;
         archivo = fopen(path.c_str(), "rb+");
@@ -496,7 +497,7 @@ void createPrimaryPartition(std::string path, std::string name, int tamanio,std:
         cout<<"Error al crear particion primaria, las 4 particiones estan ocupadas"<<endl; 
         return;
     }
-    if(spaceFree - tamanio<1){ //Vemos si en el espacio disponible cabe la particion que necesitamos
+    if(spaceFree - tamanio<0){ //Vemos si en el espacio disponible cabe la particion que necesitamos
         cout<<"Error al crear particion primaria, no hay espacio disponible"<<endl; 
         return;
     }
@@ -520,8 +521,8 @@ void createPrimaryPartition(std::string path, std::string name, int tamanio,std:
     }else{
         //Variable usada para saber donde comienza la nueva particion
         int start = sizeof(MBR);
-        for(int i = par; i>=0;i--){
-            start += mbr.mbr_partitions[i].part_size;
+        for(int i = par-1; i>=0;i--){
+            start = start + mbr.mbr_partitions[i].part_size;
         }
         //Si se necesita agregar el tamaño de la particion ponele +sizeof(Partition)
         mbr.mbr_partitions[par].part_start = start;

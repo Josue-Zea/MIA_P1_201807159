@@ -434,12 +434,14 @@ namespace yy {
         ID = 273,
         MOUNT = 274,
         UMOUNT = 275,
-        ENTERO = 276,
-        IDENTIFICADOR = 277,
-        IDPART = 278,
-        RUTA1 = 279,
-        RUTA2 = 280,
-        CADENA = 281
+        MKFS = 276,
+        FS = 277,
+        ENTERO = 278,
+        IDENTIFICADOR = 279,
+        IDPART = 280,
+        RUTA1 = 281,
+        RUTA2 = 282,
+        CADENA = 283
       };
     };
 
@@ -535,19 +537,19 @@ namespace yy {
         // Type destructor.
 switch (yytype)
     {
-      case 21: // ENTERO
+      case 23: // ENTERO
         value.template destroy< float > ();
         break;
 
-      case 22: // IDENTIFICADOR
-      case 23: // IDPART
-      case 24: // RUTA1
-      case 25: // RUTA2
-      case 26: // CADENA
-      case 30: // PARAMETROS
-      case 31: // PARAMETRO
-      case 32: // VALORES
-      case 33: // RUTAS
+      case 24: // IDENTIFICADOR
+      case 25: // IDPART
+      case 26: // RUTA1
+      case 27: // RUTA2
+      case 28: // CADENA
+      case 32: // PARAMETROS
+      case 33: // PARAMETRO
+      case 34: // VALORES
+      case 35: // RUTAS
         value.template destroy< std::string > ();
         break;
 
@@ -624,13 +626,13 @@ switch (yytype)
       symbol_type (int tok)
         : super_type(token_type (tok))
       {
-        YY_ASSERT (tok == token::FIN || tok == token::MKDISK || tok == token::RMDISK || tok == token::MENOS || tok == token::SIZE || tok == token::U || tok == token::PATH || tok == token::F || tok == token::IGUAL || tok == token::FDISK || tok == token::TYPE || tok == token::DELETE || tok == token::NAME || tok == token::ADD || tok == token::PAUSE || tok == token::REP || tok == token::ID || tok == token::MOUNT || tok == token::UMOUNT);
+        YY_ASSERT (tok == token::FIN || tok == token::MKDISK || tok == token::RMDISK || tok == token::MENOS || tok == token::SIZE || tok == token::U || tok == token::PATH || tok == token::F || tok == token::IGUAL || tok == token::FDISK || tok == token::TYPE || tok == token::DELETE || tok == token::NAME || tok == token::ADD || tok == token::PAUSE || tok == token::REP || tok == token::ID || tok == token::MOUNT || tok == token::UMOUNT || tok == token::MKFS || tok == token::FS);
       }
 #else
       symbol_type (int tok)
         : super_type(token_type (tok))
       {
-        YY_ASSERT (tok == token::FIN || tok == token::MKDISK || tok == token::RMDISK || tok == token::MENOS || tok == token::SIZE || tok == token::U || tok == token::PATH || tok == token::F || tok == token::IGUAL || tok == token::FDISK || tok == token::TYPE || tok == token::DELETE || tok == token::NAME || tok == token::ADD || tok == token::PAUSE || tok == token::REP || tok == token::ID || tok == token::MOUNT || tok == token::UMOUNT);
+        YY_ASSERT (tok == token::FIN || tok == token::MKDISK || tok == token::RMDISK || tok == token::MENOS || tok == token::SIZE || tok == token::U || tok == token::PATH || tok == token::F || tok == token::IGUAL || tok == token::FDISK || tok == token::TYPE || tok == token::DELETE || tok == token::NAME || tok == token::ADD || tok == token::PAUSE || tok == token::REP || tok == token::ID || tok == token::MOUNT || tok == token::UMOUNT || tok == token::MKFS || tok == token::FS);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -978,6 +980,36 @@ switch (yytype)
       make_UMOUNT ()
       {
         return symbol_type (token::UMOUNT);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_MKFS ()
+      {
+        return symbol_type (token::MKFS);
+      }
+#else
+      static
+      symbol_type
+      make_MKFS ()
+      {
+        return symbol_type (token::MKFS);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_FS ()
+      {
+        return symbol_type (token::FS);
+      }
+#else
+      static
+      symbol_type
+      make_FS ()
+      {
+        return symbol_type (token::FS);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1376,10 +1408,10 @@ switch (yytype)
     enum
     {
       yyeof_ = 0,
-      yylast_ = 58,     ///< Last index in yytable_.
+      yylast_ = 65,     ///< Last index in yytable_.
       yynnts_ = 7,  ///< Number of nonterminal symbols.
-      yyfinal_ = 18, ///< Termination state number.
-      yyntokens_ = 27  ///< Number of tokens.
+      yyfinal_ = 20, ///< Termination state number.
+      yyntokens_ = 29  ///< Number of tokens.
     };
 
 
@@ -1425,9 +1457,9 @@ switch (yytype)
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26
+      25,    26,    27,    28
     };
-    const int user_token_number_max_ = 281;
+    const int user_token_number_max_ = 283;
 
     if (t <= 0)
       return yyeof_;
@@ -1446,19 +1478,19 @@ switch (yytype)
   {
     switch (this->type_get ())
     {
-      case 21: // ENTERO
+      case 23: // ENTERO
         value.move< float > (std::move (that.value));
         break;
 
-      case 22: // IDENTIFICADOR
-      case 23: // IDPART
-      case 24: // RUTA1
-      case 25: // RUTA2
-      case 26: // CADENA
-      case 30: // PARAMETROS
-      case 31: // PARAMETRO
-      case 32: // VALORES
-      case 33: // RUTAS
+      case 24: // IDENTIFICADOR
+      case 25: // IDPART
+      case 26: // RUTA1
+      case 27: // RUTA2
+      case 28: // CADENA
+      case 32: // PARAMETROS
+      case 33: // PARAMETRO
+      case 34: // VALORES
+      case 35: // RUTAS
         value.move< std::string > (std::move (that.value));
         break;
 
@@ -1476,19 +1508,19 @@ switch (yytype)
   {
     switch (this->type_get ())
     {
-      case 21: // ENTERO
+      case 23: // ENTERO
         value.copy< float > (YY_MOVE (that.value));
         break;
 
-      case 22: // IDENTIFICADOR
-      case 23: // IDPART
-      case 24: // RUTA1
-      case 25: // RUTA2
-      case 26: // CADENA
-      case 30: // PARAMETROS
-      case 31: // PARAMETRO
-      case 32: // VALORES
-      case 33: // RUTAS
+      case 24: // IDENTIFICADOR
+      case 25: // IDPART
+      case 26: // RUTA1
+      case 27: // RUTA2
+      case 28: // CADENA
+      case 32: // PARAMETROS
+      case 33: // PARAMETRO
+      case 34: // VALORES
+      case 35: // RUTAS
         value.copy< std::string > (YY_MOVE (that.value));
         break;
 
@@ -1514,19 +1546,19 @@ switch (yytype)
     super_type::move (s);
     switch (this->type_get ())
     {
-      case 21: // ENTERO
+      case 23: // ENTERO
         value.move< float > (YY_MOVE (s.value));
         break;
 
-      case 22: // IDENTIFICADOR
-      case 23: // IDPART
-      case 24: // RUTA1
-      case 25: // RUTA2
-      case 26: // CADENA
-      case 30: // PARAMETROS
-      case 31: // PARAMETRO
-      case 32: // VALORES
-      case 33: // RUTAS
+      case 24: // IDENTIFICADOR
+      case 25: // IDPART
+      case 26: // RUTA1
+      case 27: // RUTA2
+      case 28: // CADENA
+      case 32: // PARAMETROS
+      case 33: // PARAMETRO
+      case 34: // VALORES
+      case 35: // RUTAS
         value.move< std::string > (YY_MOVE (s.value));
         break;
 
@@ -1584,7 +1616,7 @@ switch (yytype)
   }
 
 } // yy
-#line 1588 "parser.tab.hh"
+#line 1620 "parser.tab.hh"
 
 
 

@@ -318,5 +318,4 @@ void correrComandoMKFS(std::string id, std::string type, std::string fs){
     fwrite(&auxsuperbloque, sizeof(SuperBloque), 1, arch);
     fclose(arch); //cierro el archivo
     std::cout << "\nPARTICION FORMATEADA CORRECTAMENTE!!! \n"; //si da null es porque no se encontro el archivo
-    //Pruebas
 }
