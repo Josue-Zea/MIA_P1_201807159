@@ -82,6 +82,22 @@ std::string obtenerTexto(std::string path){
     if(!archivo.fail()){
         while(!archivo.eof()){
             getline(archivo,textoActual);
+    		std::string final = "", actual=""; int estado = 0;
+    		for(int i = 0; i<textoActual.size(); i++){
+    		    actual = textoActual[i];
+    		    if(estado == 0){
+    		        if(actual.compare("#")==0){
+    		            estado = 1;
+    		        }else{
+    		            final+=actual;
+    		        }
+    		    }else{
+    		        if(actual.compare("\n")==0){
+    		            estado = 0;
+    		        }
+    		    }
+    		}
+			textoActual = final;
             textoFinal+=" "; textoFinal += textoActual;
         }
         return textoFinal;
