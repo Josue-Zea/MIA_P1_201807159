@@ -36,7 +36,7 @@ void correrComandoRMDISK(std::string path){
        if(eliminarDisco(path)){
            cout<<"Se elimino el disco con exito"<<endl;
        }else{
-           cout<<"Error al eliminar el disco"<<endl;
+           cout<<"No se elimino el disco"<<endl;
        }
     }else{
         cout<<"Error en rmdisk, no existe el disco"<<endl;
@@ -54,7 +54,13 @@ bool verificarArchivo(std::string path){
 }
 
 bool eliminarDisco(std::string path){
-    remove(path.c_str());
+    std::string cadena = " ";
+    cout<<"¿Esta seguro que desea eliminar el disco (S/N)?: ";
+    getline(cin,cadena);
+    cadena[0]=toupper(cadena[0]);
+    if(cadena.compare("S")==0){
+        remove(path.c_str());
+    }
     if(!verificarArchivo(path)){
         return true;
     }else{
