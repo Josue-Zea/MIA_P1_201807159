@@ -18,6 +18,7 @@ struct PartMontada{
     char part_fit;
     int part_start;
     int part_size;
+    std::string tipo;
     std::string id;
 };
 
@@ -94,6 +95,7 @@ void correrComandoMOUNT(std::string path,std::string name){
         montar.letra=char(montar.valLetra);
         montar.status=mbr.mbr_partitions[par].part_status;
         montar.part_fit=mbr.mbr_partitions[par].part_fit;
+        montar.tipo = "P";
         montar.part_start=mbr.mbr_partitions[par].part_start;
         montar.part_size=mbr.mbr_partitions[par].part_size;
         montar.id = "59"+to_string(montar.val)+montar.letra;
@@ -130,6 +132,7 @@ void correrComandoMOUNT(std::string path,std::string name){
                     montar.letra=char(montar.valLetra);
                     montar.status=ebr.part_status;
                     montar.part_fit=ebr.part_fit;
+                    montar.tipo = "L";
                     montar.part_start=ebr.part_start;
                     montar.part_size=ebr.part_size;
                     montar.id = "59"+to_string(montar.val)+montar.letra;

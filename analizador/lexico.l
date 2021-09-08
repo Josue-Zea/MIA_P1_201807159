@@ -15,13 +15,13 @@ IDENTIFICADOR ([a-zA-Z_])[a-zA-Z0-9_]*
 IDPART [0-9]+[a-zA-Z]
 RUTA1 ("/"{IDENTIFICADOR})+("/"{IDENTIFICADOR}"."{IDENTIFICADOR})
 RUTA2 ("/"{IDENTIFICADOR})+("/"{IDENTIFICADOR})
+FSVAL ((2|3)fs)
 %%
-"#".*               {}
 "="		              {return yy::Parser::make_IGUAL();}
 "-"		              {return yy::Parser::make_MENOS();}
 "mkdisk"            {return yy::Parser::make_MKDISK();}
-"mkfs"              {return yy::Parser::make_MKFS();}
 "fs"		            {return yy::Parser::make_FS();}
+"mkfs"              {return yy::Parser::make_MKFS();}
 "pause"             {return yy::Parser::make_PAUSE();}
 "rmdisk"            {return yy::Parser::make_RMDISK();}
 "fdisk"             {return yy::Parser::make_FDISK();}
@@ -37,9 +37,11 @@ RUTA2 ("/"{IDENTIFICADOR})+("/"{IDENTIFICADOR})
 "path"		          {return yy::Parser::make_PATH();}
 "id"                {return yy::Parser::make_ID();}
 "f"		              {return yy::Parser::make_F();}
+
 {ENTERO}            {return yy::Parser::make_ENTERO(strtol (yytext, NULL, 10));}
-{IDENTIFICADOR}     {return yy::Parser::make_IDENTIFICADOR(std::string(yytext));}
+{FSVAL}             {return yy::Parser::make_FSVAL(std::string(yytext));}
 {IDPART}            {return yy::Parser::make_IDPART(std::string(yytext));}
+{IDENTIFICADOR}     {return yy::Parser::make_IDENTIFICADOR(std::string(yytext));}
 {CADENA}            {return yy::Parser::make_CADENA(std::string(yytext));}
 {RUTA1}             {return yy::Parser::make_RUTA1(std::string(yytext));}
 {RUTA2}             {return yy::Parser::make_RUTA2(std::string(yytext));}

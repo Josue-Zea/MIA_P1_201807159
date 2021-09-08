@@ -61,7 +61,7 @@ struct Journal{
 };
 
 void comandMKFS(std::string argumentos){
-    std::string actual = "", id = "", type = "FULL", fs = "EXT2", actL="";
+    std::string actual = "", id = "", type = "FULL", fs = "2FS", actL="";
     bool exito = true;
     //Se colocan los parametros separados y en el orden deseado
     for(int i = 0; i<argumentos.size();i++){
@@ -71,16 +71,19 @@ void comandMKFS(std::string argumentos){
                 id=actual.replace(0,3,"");
             }else if(actual.find("TYPE")==0){
                 type=actual.replace(0,5,"");
+                //Pasamos todo a mayusculas
+                for(int i = 0; i<type.size();i++){
+                    type[i] = toupper(type[i]);
+                }
+                if(!(type.compare("FAST")==0 ||type.compare("FULL")==0)){
+                    cout<<"Error en comando mkfs, debe venir fast o full"<<endl;
+                    return;
+                }
             }else if(actual.find("FS")==0){
                 fs=actual.replace(0,3,"");
                 //Pasamos todo a mayusculas
                 for(int i = 0; i<fs.size();i++){
                     fs[i] = toupper(fs[i]);
-                }
-                //Verificamos que se encuentre fast o full
-                if(!(fs.compare("FAST")==0 || fs.compare("FULL")==0)){
-                    cout<<"Error en mkfs, debe venir fast o full"<<endl;
-                    return;
                 }
             }else{
                 exito = false;
@@ -93,7 +96,7 @@ void comandMKFS(std::string argumentos){
     if(exito==true){
         correrComandoMKFS(id, type, fs);
     }else{
-        cout<<"Error en metodo comandMKDISK, hay parametros invalidos";
+        cout<<"Error en metodo comandMKFS, hay parametros invalidos";
     }
 }
 
@@ -109,45 +112,33 @@ void correrComandoMKFS(std::string id, std::string type, std::string fs){
         cout<<"Error, no se encuentra una particion con id: "<<id<<" montada en el sistema"<<endl;
         return;
     }
-    //Leemos el disco de la particion montada
-    FILE*arch;
-    arch=fopen(ParMont[par].path.c_str(),"rb+");
-    MBR mbr;
-    fseek(arch, 0, SEEK_SET);
-    fread(&mbr,sizeof(MBR),1,arch);
-    fclose(arch);
     //Particion auxiliar donde manejaremos los datos
-    Partition aux; bool encontrado = false;
-    //Buscamos la particion y la guardamos en un auxiliar para trabajar con ella
-    for(int i = 0; i<4; i++){
-        if(strcmp(mbr.mbr_partitions[i].part_name, ParMont[par].name.c_str())==0){
-            aux = mbr.mbr_partitions[i];
-            encontrado = true;
-        }
-    }
-    //Si no se encuentra la particion que está montada dentro del disco
-    if(!encontrado){ cout<<"Error en mkfs, no se encontro la particion en el disco"<<endl; return;}
+    int start = ParMont[par].part_start;
+    int size = ParMont[par].part_size;
     //Calculo de numero de inodos y bloques
-    int n=((aux.part_size - sizeof(SuperBloque))/(4+sizeof(Journal)+sizeof(Inodo)+3*sizeof(Bloque_Archivos)));
+    int n=((size - sizeof(SuperBloque))/(4+sizeof(Journal)+sizeof(Inodo)+3*sizeof(Bloque_Archivos)));
     //Formateo
-    if(fs.compare("FULL")==0){//SI ES FULL TENGO QUE BORRAR TODO Y LLENAR DE CEROS
+    if(type.compare("FULL")==0){//SI ES FULL TENGO QUE BORRAR TODO Y LLENAR DE CEROS
         FILE * archFormat;
         archFormat=fopen(ParMont[par].path.c_str(),"rb+");
-        fseek(archFormat,aux.part_start,SEEK_SET);//ME POSICIONO AL INICIO DE LA PARTICION
+        fseek(archFormat,start,SEEK_SET);//ME POSICIONO AL INICIO DE LA PARTICION
         char buff;
         buff='\0';
-        for(int i=0;i<aux.part_size;i++) { //lleno de ceros el archivo
+        for(int i=0;i<size;i++) { //lleno de ceros el archivo
             fwrite(&buff,sizeof(buff),1,archFormat);
             //--PART_STAR ES 100 - 101 -102 -103
-            fseek(archFormat, aux.part_start + i, SEEK_SET);// AGREGUE ESTA LINEA
+            fseek(archFormat, start + i, SEEK_SET);// AGREGUE ESTA LINEA
         }
         fclose(archFormat);
     }
+    //Reabrimos el archivo
+    FILE * arch;
+    arch=fopen(ParMont[par].path.c_str(),"rb+");
     //Creamos el superbloque
     SuperBloque sbloque;
-    if(type.compare("EXT2")==0){
+    if(fs.compare("2FS")==0){
         sbloque.s_filesystem_type=2;
-    }else if(type.compare("EXT3")==0){
+    }else if(fs.compare("3FS")==0){
         sbloque.s_filesystem_type=3;
     }else{
         cout<<"Tipo de sistema no reconocido: "<<type<<endl;
@@ -165,17 +156,17 @@ void correrComandoMKFS(std::string id, std::string type, std::string fs){
     sbloque.s_block_size=sizeof(Bloque_Archivos);
     sbloque.s_first_ino=2;//el primer inodo libre va a ser el 2
     sbloque.s_first_blo=2;     //100+64+(10*64)=804 byte
-    sbloque.s_bm_inode_start=aux.part_start + sizeof(SuperBloque) + (100*sizeof(Journal));
+    sbloque.s_bm_inode_start=start + sizeof(SuperBloque) + (100*sizeof(Journal));
     sbloque.s_bm_block_start=sbloque.s_bm_inode_start + n ;
     sbloque.s_inode_start=sbloque.s_bm_block_start+3*n;
     sbloque.s_block_start=sbloque.s_inode_start+n*sizeof(Inodo);
-    fseek(arch,aux.part_start, SEEK_SET); //INICIO DE LA PARTICION
+    fseek(arch,start, SEEK_SET); //INICIO DE LA PARTICION
     fwrite(&sbloque,sizeof(SuperBloque),1, arch); //escribimos el superbloque en la particion
     //Creamos bitmap de inodos y bloques
     char bitinodos[n];
     char bibloques[3*n];
     //Escribimos los inodos
-    int iniciobitnodos=aux.part_start + sizeof(SuperBloque) + (100*sizeof(Journal));
+    int iniciobitnodos=start + sizeof(SuperBloque) + (100*sizeof(Journal));
     for(int i=2;i<n;i++){
         bitinodos[i]='0';
     }
@@ -193,7 +184,7 @@ void correrComandoMKFS(std::string id, std::string type, std::string fs){
     fseek(arch,iniciobloques, SEEK_SET);
     fwrite(&bibloques,sizeof(bibloques),1,arch);
     //Escribimos los Journal
-    int iniciojournal=(aux.part_start + sizeof(SuperBloque));
+    int iniciojournal=(start + sizeof(SuperBloque));
     Journal journalicial;
     //Journal quemado inicial
     journalicial.Journal_Tipo_Operacion[0]='-';
@@ -218,7 +209,7 @@ void correrComandoMKFS(std::string id, std::string type, std::string fs){
     strcpy(journalicial2.Journal_propietario,"1");
     journalicial2.Journal_permisos=664;
     //---ESCRIBO EL JOURNAL DE LA CARPETA EN EL ARCHIVO
-    int posicioninical=aux.part_start+sizeof(SuperBloque);
+    int posicioninical=start+sizeof(SuperBloque);
     fseek(arch,posicioninical+0*sizeof(Journal),SEEK_SET); //apunta al journal
     fwrite(&journalicial2,sizeof(Journal),1,arch);
     //------------ESCRIBO JOURNAL DEL ARCHIVO
@@ -235,7 +226,7 @@ void correrComandoMKFS(std::string id, std::string type, std::string fs){
     fwrite(&journalicial3,sizeof(Journal),1,arch);
     //AHORA LEO EL SUPERBLOQUE PARA ESCRIBIR EN SUS BLOQUES E INODOS
     SuperBloque auxsuperbloque;
-    fseek(arch,aux.part_start,SEEK_SET);
+    fseek(arch,start,SEEK_SET);
     fread(&auxsuperbloque,sizeof(SuperBloque),1,arch);
     //UN INODO PARA LA CARPETA RAIz
     Inodo raiz;
@@ -314,8 +305,8 @@ void correrComandoMKFS(std::string id, std::string type, std::string fs){
     fwrite(&bloquearchivos, 64, 1, arch);
     auxsuperbloque.s_free_blocks_count--;//disminuyo en 1 los bloques ocupados
     //REESCRIBO EL SUPERBLOQUE
-    fseek(arch, aux.part_start, SEEK_SET);
+    fseek(arch, start, SEEK_SET);
     fwrite(&auxsuperbloque, sizeof(SuperBloque), 1, arch);
     fclose(arch); //cierro el archivo
-    std::cout << "\nPARTICION FORMATEADA CORRECTAMENTE!!! \n"; //si da null es porque no se encontro el archivo
+    std::cout <<"PARTICION FORMATEADA CORRECTAMENTE!!! \n";
 }

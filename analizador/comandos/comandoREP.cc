@@ -10,6 +10,7 @@ void reporteMBR(std::string path, std::string id);
 void reporteDISK(std::string path, std::string id);
 std::string codeDiskLogicas(std::string path, int start, double size);
 void crearReporte(std::string codigoDot, std::string path);
+void reporteSB(std::string path, std::string id);
 
 void comandREP(std::string argumentos){
     std::string actual = "", path = "", actL="", name="", id="", ruta = "", root="";
@@ -55,6 +56,8 @@ void correrComandoREP(std::string path,std::string name,std::string id,std::stri
         reporteMBR(path, id);
     }else if(name.compare("DISK")==0){
         reporteDISK(path, id);
+    }else if(name.compare("SB")==0){
+        reporteSB(path, id);
     }else{
         cout<<"No se reconoce el tipo de reporte a realizar: "<<name<<endl;
     }
@@ -146,6 +149,48 @@ void reporteDISK(std::string path, std::string id){
     var+="\"];\n}";
     crearReporte(var,path);
     cout<<"Se creo el reporte con exito"<<endl;
+}
+
+void reporteSB(std::string path, std::string id){
+    std::string dirDisc = buscarPathDisco(id);
+    if(dirDisc.compare("")==0){
+        cout<<"Error, no se encontro un id: "<<id<<" no se puede ubicar el disco"<<endl;
+        return;
+    }
+    int par = -1;
+    for(int i = 0; i<ParMont.size();i++){
+        if(ParMont[i].id.compare(id)==0){
+            par = i;
+            break;
+        }
+    }
+    if(par==-1){cout<<"No hay una particiion montada con el id: "<<id<<endl; return;}
+    int start = ParMont[par].part_start;
+    SuperBloque sbl;
+    FILE *used;
+    used=fopen(dirDisc.c_str(),"rb+");
+    fseek(used, start, SEEK_SET);
+    fread(&sbl,sizeof(SuperBloque),1,used);
+    fclose(used);
+    std::string var = "digraph G {abc [shape=none, margin=0, label=<<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\">\n";
+    var+="<TR><TD>Nombre</TD><TD>Valor</TD></TR>\n";
+    var+="<TR><TD>s_inodes_count</TD><TD>"+to_string(sbl.s_inodes_count)+"</TD></TR>\n";
+    var+="<TR><TD>s_blocks_count</TD><TD>"+to_string(sbl.s_blocks_count)+"</TD></TR>\n";
+    var+="<TR><TD>s_free_blocks_count</TD><TD>"+to_string(sbl.s_free_blocks_count)+"</TD></TR>\n";
+    var+="<TR><TD>s_free_inodes_count</TD><TD>"+to_string(sbl.s_free_inodes_count)+"</TD></TR>\n";
+    var+="<TR><TD>s_mtime</TD><TD>"+string(sbl.s_mtime)+"</TD></TR>\n";
+    var+="<TR><TD>s_umtime</TD><TD>"+string(sbl.s_umtime)+"</TD></TR>\n";
+    var+="<TR><TD>s_mnt_count</TD><TD>"+to_string(sbl.s_mnt_count)+"</TD></TR>\n";
+    var+="<TR><TD>s_magic</TD><TD>"+to_string(sbl.s_magic)+"</TD></TR>\n";
+    var+="<TR><TD>s_inode_size</TD><TD>"+to_string(sbl.s_inode_size)+"</TD></TR>\n";
+    var+="<TR><TD>s_first_ino</TD><TD>"+to_string(sbl.s_first_ino)+"</TD></TR>\n";
+    var+="<TR><TD>s_bm_inode_start</TD><TD>"+to_string(sbl.s_bm_inode_start)+"</TD></TR>\n";
+    var+="<TR><TD>s_bm_block_start</TD><TD>"+to_string(sbl.s_bm_block_start)+"</TD></TR>\n";
+    var+="<TR><TD>s_inode_start</TD><TD>"+to_string(sbl.s_inode_start)+"</TD></TR>\n";
+    var+="<TR><TD>s_block_size</TD><TD>"+to_string(sbl.s_block_size)+"</TD></TR>\n";
+    var+="</TABLE>>];}";
+    crearReporte(var, path);
+    cout<<"Reporte generado con exito"<<endl;
 }
 
 std::string buscarPathDisco(std::string id){

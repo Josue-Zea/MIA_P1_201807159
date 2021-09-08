@@ -32,6 +32,7 @@
 %token<std::string> RUTA1
 %token<std::string> RUTA2
 %token<std::string> CADENA
+%token<std::string> FSVAL
 /*%token<std::string> K
 %token<std::string> M*/
 %token FIN 0 "eof"
@@ -72,7 +73,7 @@ PARAMETRO: MENOS SIZE IGUAL ENTERO          { $$="SIZE:"+std::to_string($4)+"&";
     | MENOS NAME IGUAL VALORES              { $$="NAME:"+$4+"&"; }
     | MENOS ADD IGUAL ENTERO                { $$="ADD:"+std::to_string($4)+"&"; }
     | MENOS ID IGUAL IDPART                 { $$="ID:"+$4+"&"; }
-    | MENOS FS IGUAL IDENTIFICADOR          { $$="FS:"+$4+"&"; }
+    | MENOS FS IGUAL FSVAL                  { $$="FS:"+$4+"&"; }
 ;
 
 VALORES: CADENA                             { $$=$1; }

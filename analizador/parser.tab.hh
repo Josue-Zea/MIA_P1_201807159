@@ -372,6 +372,7 @@ namespace yy {
       // RUTA1
       // RUTA2
       // CADENA
+      // FSVAL
       // PARAMETROS
       // PARAMETRO
       // VALORES
@@ -441,7 +442,8 @@ namespace yy {
         IDPART = 280,
         RUTA1 = 281,
         RUTA2 = 282,
-        CADENA = 283
+        CADENA = 283,
+        FSVAL = 284
       };
     };
 
@@ -546,10 +548,11 @@ switch (yytype)
       case 26: // RUTA1
       case 27: // RUTA2
       case 28: // CADENA
-      case 32: // PARAMETROS
-      case 33: // PARAMETRO
-      case 34: // VALORES
-      case 35: // RUTAS
+      case 29: // FSVAL
+      case 33: // PARAMETROS
+      case 34: // PARAMETRO
+      case 35: // VALORES
+      case 36: // RUTAS
         value.template destroy< std::string > ();
         break;
 
@@ -652,13 +655,13 @@ switch (yytype)
       symbol_type (int tok, std::string v)
         : super_type(token_type (tok), std::move (v))
       {
-        YY_ASSERT (tok == token::IDENTIFICADOR || tok == token::IDPART || tok == token::RUTA1 || tok == token::RUTA2 || tok == token::CADENA);
+        YY_ASSERT (tok == token::IDENTIFICADOR || tok == token::IDPART || tok == token::RUTA1 || tok == token::RUTA2 || tok == token::CADENA || tok == token::FSVAL);
       }
 #else
       symbol_type (int tok, const std::string& v)
         : super_type(token_type (tok), v)
       {
-        YY_ASSERT (tok == token::IDENTIFICADOR || tok == token::IDPART || tok == token::RUTA1 || tok == token::RUTA2 || tok == token::CADENA);
+        YY_ASSERT (tok == token::IDENTIFICADOR || tok == token::IDPART || tok == token::RUTA1 || tok == token::RUTA2 || tok == token::CADENA || tok == token::FSVAL);
       }
 #endif
     };
@@ -1102,6 +1105,21 @@ switch (yytype)
         return symbol_type (token::CADENA, v);
       }
 #endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_FSVAL (std::string v)
+      {
+        return symbol_type (token::FSVAL, std::move (v));
+      }
+#else
+      static
+      symbol_type
+      make_FSVAL (const std::string& v)
+      {
+        return symbol_type (token::FSVAL, v);
+      }
+#endif
 
 
   private:
@@ -1411,7 +1429,7 @@ switch (yytype)
       yylast_ = 65,     ///< Last index in yytable_.
       yynnts_ = 7,  ///< Number of nonterminal symbols.
       yyfinal_ = 20, ///< Termination state number.
-      yyntokens_ = 29  ///< Number of tokens.
+      yyntokens_ = 30  ///< Number of tokens.
     };
 
 
@@ -1457,9 +1475,9 @@ switch (yytype)
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28
+      25,    26,    27,    28,    29
     };
-    const int user_token_number_max_ = 283;
+    const int user_token_number_max_ = 284;
 
     if (t <= 0)
       return yyeof_;
@@ -1487,10 +1505,11 @@ switch (yytype)
       case 26: // RUTA1
       case 27: // RUTA2
       case 28: // CADENA
-      case 32: // PARAMETROS
-      case 33: // PARAMETRO
-      case 34: // VALORES
-      case 35: // RUTAS
+      case 29: // FSVAL
+      case 33: // PARAMETROS
+      case 34: // PARAMETRO
+      case 35: // VALORES
+      case 36: // RUTAS
         value.move< std::string > (std::move (that.value));
         break;
 
@@ -1517,10 +1536,11 @@ switch (yytype)
       case 26: // RUTA1
       case 27: // RUTA2
       case 28: // CADENA
-      case 32: // PARAMETROS
-      case 33: // PARAMETRO
-      case 34: // VALORES
-      case 35: // RUTAS
+      case 29: // FSVAL
+      case 33: // PARAMETROS
+      case 34: // PARAMETRO
+      case 35: // VALORES
+      case 36: // RUTAS
         value.copy< std::string > (YY_MOVE (that.value));
         break;
 
@@ -1555,10 +1575,11 @@ switch (yytype)
       case 26: // RUTA1
       case 27: // RUTA2
       case 28: // CADENA
-      case 32: // PARAMETROS
-      case 33: // PARAMETRO
-      case 34: // VALORES
-      case 35: // RUTAS
+      case 29: // FSVAL
+      case 33: // PARAMETROS
+      case 34: // PARAMETRO
+      case 35: // VALORES
+      case 36: // RUTAS
         value.move< std::string > (YY_MOVE (s.value));
         break;
 
@@ -1616,7 +1637,7 @@ switch (yytype)
   }
 
 } // yy
-#line 1620 "parser.tab.hh"
+#line 1641 "parser.tab.hh"
 
 
 

@@ -8,8 +8,8 @@
 #include "./comandos/comandoFDISK.cc"
 #include "./comandos/comandoMOUNT.cc"
 #include "./comandos/comandoUMOUNT.cc"
-#include "./comandos/comandoREP.cc"
 #include "./comandos/comandoMKFS.cc"
+#include "./comandos/comandoREP.cc"
 /*Prototipos de funciones*/
 void comandMKDISK(std::string argumentos);
 void comandRMDISK(std::string argumentos);
